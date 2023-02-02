@@ -14,6 +14,7 @@ public protocol EndpointProtocol {
     var params: [String: Any] { get }
     var method: EndpointMethod { get }
     var decodingStrategy: JSONDecoder.KeyDecodingStrategy { get }
+    var cachePolicy: URLRequest.CachePolicy { get set }
 }
 
 public extension EndpointProtocol {

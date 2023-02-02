@@ -13,7 +13,7 @@ public protocol SessionCoreProtocol {
     var securitySession: SecuritySession? { get set }
 }
 
-public final class SessionCore: SessionCoreProtocol {
+open class SessionCore: SessionCoreProtocol {
     public var session: URLSessionProtocol {
         if let securitySession = securitySession, securitySessionEnabled {
             return createURLSessionWithSslEnabled(domain: securitySession.currentDomain,
