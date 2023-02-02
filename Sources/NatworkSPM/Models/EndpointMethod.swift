@@ -1,6 +1,6 @@
 //
 //  EndpointMethod.swift
-//  NetworkCore
+//  
 //
 //  Created by Jade Silveira on 20/12/21.
 //

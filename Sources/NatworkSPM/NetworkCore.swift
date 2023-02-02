@@ -1,13 +1,13 @@
 //
-//  Network.swift
-//  NetworkCore
+//  NetworkCore.swift
+//  
 //
 //  Created by Jade Silveira on 01/12/21.
 //
 
 import Foundation
 
-public protocol Networking {
+public protocol NetworkCoreProtocol {
     /// Fetch a decodable data through an url text.
      
     /// - Parameters:
@@ -32,6 +32,15 @@ public protocol Networking {
         resultType: T.Type,
         completion: @escaping (Result<T, ApiError>) -> Void
     )
+    /// Fetch no content through an endpoint.
+    
+    /// - Parameters:
+    ///    - endpoint: The endpoint implementation of EndpointProtocol to be fetched as URLRequest.
+    ///    - completion: The block to be called when the operation is complete. The block will pass a NoContentResponse (Void) provided on success, otherwise an `ApiError`.
+    func fetchNoContent(
+        endpoint: EndpointProtocol,
+        completion: @escaping (Result<NoContentResponse, ApiError>) -> Void
+    )
     /// Fetch data through an url text.
      
     /// - Parameters:
@@ -43,7 +52,7 @@ public protocol Networking {
     )
 }
 
-public extension Networking {
+public extension NetworkCoreProtocol {
     func fetchData<T: Decodable>(
         urlText: String,
         resultType: T.Type,
@@ -54,13 +63,17 @@ public extension Networking {
     }
 }
 
-public final class Network: Networking {
-    private let session: URLSessionProtocol
+public final class NetworkCore: NetworkCoreProtocol {
+    private let sessionCore: SessionCoreProtocol
     private let queue: DispatchQueueProtocol
+    private let requestFactory: RequestFactoryProtocol.Type
     
-    public init(session: URLSessionProtocol = URLSession.shared, callbackQueue: DispatchQueueProtocol = DispatchQueue.main) {
-        self.session = session
+    public init(sessionCore: SessionCoreProtocol = SessionCore(),
+                callbackQueue: DispatchQueueProtocol = DispatchQueue.main,
+                requestFactory: RequestFactoryProtocol.Type = RequestFactory.self) {
+        self.sessionCore = sessionCore
         self.queue = callbackQueue
+        self.requestFactory = requestFactory
     }
     
     public func fetchData<T: Decodable>(
@@ -73,7 +86,7 @@ public final class Network: Networking {
             completion(.failure(.urlParse))
             return
         }
-        session.fetchData(with: url) { data, response, error in
+        sessionCore.session.fetchData(with: url) { data, response, error in
             self.queue.callAsync {
                 if let foundError = self.verifyError(data: data, response: response, error: error) {
                     completion(.failure(foundError))
@@ -98,11 +111,11 @@ public final class Network: Networking {
         resultType: T.Type,
         completion: @escaping (Result<T, ApiError>) -> Void
     ) {
-        guard let request = createRequest(endpoint: endpoint) else {
+        guard let request = requestFactory.makeRequest(endpoint: endpoint) else {
             completion(.failure(.urlParse))
             return
         }
-        session.fetchData(with: request) { data, response, error in
+        sessionCore.session.fetchData(with: request) { data, response, error in
             self.queue.callAsync {
                 if let foundError = self.verifyError(data: data, response: response, error: error) {
                     completion(.failure(foundError))
@@ -110,6 +123,10 @@ public final class Network: Networking {
                 }
                 guard let unwrappedData = data else {
                     completion(.failure(.nilData))
+                    return
+                }
+                guard unwrappedData.isEmpty else {
+                    completion(.failure(.noContent))
                     return
                 }
                 let decodedData: T? = self.decodeData(data: unwrappedData, decodingStrategy: endpoint.decodingStrategy)
@@ -122,6 +139,33 @@ public final class Network: Networking {
         }
     }
     
+    public func fetchNoContent(
+        endpoint: EndpointProtocol,
+        completion: @escaping (Result<NoContentResponse, ApiError>) -> Void
+    ) {
+        guard let request = requestFactory.makeRequest(endpoint: endpoint) else {
+            completion(.failure(.urlParse))
+            return
+        }
+        sessionCore.session.fetchData(with: request) { data, response, error in
+            self.queue.callAsync {
+                if let foundError = self.verifyError(data: data, response: response, error: error) {
+                    completion(.failure(foundError))
+                    return
+                }
+                guard let unwrappedData = data else {
+                    completion(.failure(.nilData))
+                    return
+                }
+                guard unwrappedData.isEmpty else {
+                    completion(.failure(.foundContent))
+                    return
+                }
+                completion(.success)
+            }
+        }
+    }
+    
     public func fetchData(
         urlText: String,
         completion: @escaping (Result<Data, ApiError>) -> Void
@@ -130,7 +174,7 @@ public final class Network: Networking {
             completion(.failure(.urlParse))
             return
         }
-        session.fetchData(with: url) { data, response, error in
+        sessionCore.session.fetchData(with: url) { data, response, error in
             self.queue.callAsync {
                 if let foundError = self.verifyError(data: data, response: response, error: error) {
                     completion(.failure(foundError))
@@ -146,19 +190,7 @@ public final class Network: Networking {
     }
 }
     
-private extension Network {
-    func createRequest(endpoint: EndpointProtocol) -> URLRequest? {
-        guard let url = URL(string: endpoint.url) else { return nil }
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method.rawValue
-        request.httpBody = try? JSONSerialization.data(withJSONObject: endpoint.params)
-        
-        for header in endpoint.headers {
-            request.addValue(header.value, forHTTPHeaderField: header.field)
-        }
-        return request
-    }
-    
+private extension NetworkCore {
     func decodeData<T: Decodable>(data: Data, decodingStrategy: JSONDecoder.KeyDecodingStrategy) -> T? {
         try? JSONDecoder(keyDecodingStrategy: decodingStrategy).decode(T.self, from: data)
     }

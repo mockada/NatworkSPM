@@ -1,6 +1,6 @@
 //
 //  StatusCode.swift
-//  NetworkCore
+//  
 //
 //  Created by Jade Silveira on 01/12/21.
 //

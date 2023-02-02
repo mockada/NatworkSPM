@@ -10,7 +10,7 @@ import Foundation
 public protocol EndpointProtocol {
     var host: String { get }
     var path: String { get }
-    var headers: [EndpointHeader] { get }
+    var headers: [String: Any] { get }
     var params: [String: Any] { get }
     var method: EndpointMethod { get }
     var decodingStrategy: JSONDecoder.KeyDecodingStrategy { get }
@@ -20,6 +20,7 @@ public extension EndpointProtocol {
     var url: String {
         host.appending(path)
     }
-    var headers: [EndpointHeader] { [] }
+    var headers: [String: Any] { [:] }
     var params: [String: Any] { [:] }
+    var decodingStrategy: JSONDecoder.KeyDecodingStrategy { .useDefaultKeys }
 }
