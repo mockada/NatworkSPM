@@ -28,7 +28,7 @@ open class RequestFactory: RequestFactoryProtocol {
         guard let url = urlComponents.url else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = endpoint.method.rawValue
-        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.cachePolicy = endpoint.cachePolicy
         request.httpBody = try? JSONSerialization.data(withJSONObject: endpoint.params)
         
         for header in endpoint.headers {

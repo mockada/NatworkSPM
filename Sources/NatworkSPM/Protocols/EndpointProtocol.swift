@@ -24,4 +24,5 @@ public extension EndpointProtocol {
     var headers: [String: Any] { [:] }
     var params: [String: Any] { [:] }
     var decodingStrategy: JSONDecoder.KeyDecodingStrategy { .useDefaultKeys }
+    var cachePolicy: URLRequest.CachePolicy { .useProtocolCachePolicy }
 }

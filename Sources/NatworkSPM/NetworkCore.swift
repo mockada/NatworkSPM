@@ -66,15 +66,15 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: url) { data, response, error in
-            self.queue.callAsync {
-                let sessionResult: URLSessionResult = .init(data: data,
-                                                            response: response,
-                                                            error: error)
-                self.callbackHandler.handleContent(endpoint: endpoint,
-                                            resultType: resultType,
-                                            sessionResult: sessionResult,
-                                            completion: completion)
+        sessionCore.session.fetchData(with: url) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleContent(
+                    endpoint: endpoint,
+                    resultType: resultType,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -87,13 +87,14 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: url) { data, response, error in
-            self.queue.callAsync {
-                self.callbackHandler.handleNoContent(endpoint: endpoint,
-                                              sessionResult: URLSessionResult(data: data,
-                                                                              response: response,
-                                                                              error: error),
-                                              completion: completion)
+        sessionCore.session.fetchData(with: url) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleNoContent(
+                    endpoint: endpoint,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -107,15 +108,15 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: request) { data, response, error in
-            self.queue.callAsync {
-                let sessionResult: URLSessionResult = .init(data: data,
-                                                            response: response,
-                                                            error: error)
-                self.callbackHandler.handleContent(endpoint: endpoint,
-                                            resultType: resultType,
-                                            sessionResult: sessionResult,
-                                            completion: completion)
+        sessionCore.session.fetchData(with: request) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleContent(
+                    endpoint: endpoint,
+                    resultType: resultType,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -128,13 +129,14 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: request) { data, response, error in
-            self.queue.callAsync {
-                self.callbackHandler.handleNoContent(endpoint: endpoint,
-                                              sessionResult: URLSessionResult(data: data,
-                                                                              response: response,
-                                                                              error: error),
-                                              completion: completion)
+        sessionCore.session.fetchData(with: request) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleNoContent(
+                    endpoint: endpoint,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -148,15 +150,15 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: request) { data, response, error in
-            self.queue.callAsync {
-                let sessionResult: URLSessionResult = .init(data: data,
-                                                            response: response,
-                                                            error: error)
-                self.callbackHandler.handleContent(endpoint: endpoint,
-                                            resultType: resultType,
-                                            sessionResult: sessionResult,
-                                            completion: completion)
+        sessionCore.session.fetchData(with: request) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleContent(
+                    endpoint: endpoint,
+                    resultType: resultType,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -169,14 +171,14 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: request) { data, response, error in
-            self.queue.callAsync {
-                let sessionResult: URLSessionResult = .init(data: data,
-                                                            response: response,
-                                                            error: error)
-                self.callbackHandler.handleNoContent(endpoint: endpoint,
-                                              sessionResult: sessionResult,
-                                              completion: completion)
+        sessionCore.session.fetchData(with: request) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleNoContent(
+                    endpoint: endpoint,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }
@@ -189,14 +191,14 @@ open class NetworkCore: NetworkCoreProtocol {
             completion(.failure(.urlParse))
             return
         }
-        sessionCore.session.fetchData(with: url) { data, response, error in
-            self.queue.callAsync {
-                let sessionResult: URLSessionResult = .init(data: data,
-                                                            response: response,
-                                                            error: error)
-                self.callbackHandler.handleDataContent(endpoint: endpoint,
-                                                sessionResult: sessionResult,
-                                                completion: completion)
+        sessionCore.session.fetchData(with: url) { [queue, callbackHandler] data, response, error in
+            queue.callAsync {
+                callbackHandler.handleDataContent(
+                    endpoint: endpoint,
+                    data: data,
+                    response: response,
+                    error: error,
+                    completion: completion)
             }
         }
     }

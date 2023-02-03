@@ -9,12 +9,6 @@ import Foundation
 
 extension Dictionary {
     func toQueryItems() -> [URLQueryItem] {
-        var queryItems: [URLQueryItem] = []
-        for param in self {
-            let queryItem: URLQueryItem = .init(name: param.key as? String ?? "",
-                                                value: param.value as? String ?? "")
-            queryItems.append(queryItem)
-        }
-        return queryItems
+        self.map { .init(name: $0.key as? String ?? "", value: $0.value as? String ?? "") }
     }
 }

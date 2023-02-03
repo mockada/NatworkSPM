@@ -11,17 +11,23 @@ public protocol CallbackHandlerProtocol {
     func handleContent<T: Decodable>(
         endpoint: EndpointProtocol,
         resultType: T.Type,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<T, ApiError>) -> Void
     )
     func handleDataContent(
         endpoint: EndpointProtocol,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<Data, ApiError>) -> Void
     )
     func handleNoContent(
         endpoint: EndpointProtocol,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<NoContentResponse, ApiError>) -> Void
     )
 }
@@ -36,14 +42,16 @@ open class CallbackHandler: CallbackHandlerProtocol {
     public func handleContent<T: Decodable>(
         endpoint: EndpointProtocol,
         resultType: T.Type,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<T, ApiError>) -> Void
     ) {
-        if let foundError = networkHelper.verifyError(sessionResult: sessionResult) {
+        if let foundError = networkHelper.verifyError(response: response, error: error) {
             completion(.failure(foundError))
             return
         }
-        guard let unwrappedData = sessionResult.data else {
+        guard let unwrappedData = data else {
             completion(.failure(.nilData))
             return
         }
@@ -61,14 +69,16 @@ open class CallbackHandler: CallbackHandlerProtocol {
     
     public func handleDataContent(
         endpoint: EndpointProtocol,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<Data, ApiError>) -> Void
     ) {
-        if let foundError = networkHelper.verifyError(sessionResult: sessionResult) {
+        if let foundError = networkHelper.verifyError(response: response, error: error) {
             completion(.failure(foundError))
             return
         }
-        guard let unwrappedData = sessionResult.data else {
+        guard let unwrappedData = data else {
             completion(.failure(.nilData))
             return
         }
@@ -81,14 +91,16 @@ open class CallbackHandler: CallbackHandlerProtocol {
     
     public func handleNoContent(
         endpoint: EndpointProtocol,
-        sessionResult: URLSessionResult,
+        data: Data?,
+        response: URLResponse?,
+        error: Error?,
         completion: @escaping (Result<NoContentResponse, ApiError>) -> Void
     ) {
-        if let foundError = networkHelper.verifyError(sessionResult: sessionResult) {
+        if let foundError = networkHelper.verifyError(response: response, error: error) {
             completion(.failure(foundError))
             return
         }
-        guard let unwrappedData = sessionResult.data else {
+        guard let unwrappedData = data else {
             completion(.failure(.nilData))
             return
         }

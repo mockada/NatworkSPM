@@ -14,13 +14,7 @@ public protocol SessionCoreProtocol {
 }
 
 open class SessionCore: SessionCoreProtocol {
-    public var session: URLSessionProtocol {
-        if let securitySession = securitySession, securitySessionEnabled {
-            return createURLSessionWithSslEnabled(domain: securitySession.currentDomain,
-                                                  expectedDomain: securitySession.expectedDomain)
-        }
-        return createURLSessionWithSslDisabled()
-    }
+    public var session: URLSessionProtocol { getSession() }
     public var securitySessionEnabled: Bool = false
     public var securitySession: SecuritySession?
     
@@ -44,5 +38,13 @@ private extension SessionCore {
     
     func createURLSessionWithSslDisabled() -> URLSessionProtocol {
         URLSession(configuration: .default)
+    }
+    
+    func getSession() -> URLSessionProtocol {
+        guard let securitySession = securitySession, securitySessionEnabled else {
+            return createURLSessionWithSslDisabled()
+        }
+        return createURLSessionWithSslEnabled(domain: securitySession.currentDomain,
+                                              expectedDomain: securitySession.expectedDomain)
     }
 }
