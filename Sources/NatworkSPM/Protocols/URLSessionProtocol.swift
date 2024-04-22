@@ -9,7 +9,7 @@ import Foundation
 
 public typealias URLSessionCompletion = (Data?, URLResponse?, Error?) -> Void
 
-public protocol URLSessionProtocol {
+public protocol URLSessionProtocol: URLSessionDelegate {
     func fetchData(with url: URL, completionHandler: @escaping URLSessionCompletion)
     func fetchData(with urlRequest: URLRequest, completionHandler: @escaping URLSessionCompletion)
 }

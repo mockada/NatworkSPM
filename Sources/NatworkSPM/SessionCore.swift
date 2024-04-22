@@ -18,33 +18,33 @@ open class SessionCore: SessionCoreProtocol {
     public var securitySessionEnabled: Bool = false
     public var securitySession: SecuritySession?
     
+    private var expectedDomain: String = ""
+    private var configuration: URLSessionConfiguration = URLSessionConfiguration.default
+    private var sessionDelegate: URLSessionProtocol = URLSession(configuration: .default)
+    
     public init() { }
+    
+    public init(expectedDomain: String,
+                configuration: URLSessionConfiguration,
+                sessionDelegate: URLSessionProtocol) {
+        self.expectedDomain = expectedDomain
+        self.configuration = configuration
+        self.sessionDelegate = sessionDelegate
+    }
 }
 
 private extension SessionCore {
-    func createURLSessionWithSslEnabled(
-        domain: String,
-        expectedDomain: String,
-        sessionDelegate: URLSessionDelegate? = nil
-    ) -> URLSessionProtocol {
-        guard let sessionDelegate = sessionDelegate else {
-            return createURLSessionWithSslDisabled()
-        }
+    func createURLSessionWithSslEnabled(calledDomain: String) -> URLSessionProtocol {
         let configuration = URLSessionConfiguration.default
-        let isExpectedDomain = domain.contains(expectedDomain)
+        let isExpectedDomain = calledDomain.contains(expectedDomain)
         let delegate = isExpectedDomain ? sessionDelegate : nil
         return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
     }
     
-    func createURLSessionWithSslDisabled() -> URLSessionProtocol {
-        URLSession(configuration: .default)
-    }
-    
     func getSession() -> URLSessionProtocol {
         guard let securitySession = securitySession, securitySessionEnabled else {
-            return createURLSessionWithSslDisabled()
+            return sessionDelegate
         }
-        return createURLSessionWithSslEnabled(domain: securitySession.currentDomain,
-                                              expectedDomain: securitySession.expectedDomain)
+        return createURLSessionWithSslEnabled(calledDomain: securitySession.currentDomain)
     }
 }
