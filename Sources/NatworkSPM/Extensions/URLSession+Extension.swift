@@ -18,7 +18,11 @@ extension URLSession: URLSessionProtocol {
     }
     public func fetchDataAsync(with url: URL) async throws -> (Data, URLResponse)? {
         if #available(macOS 12.0, *) {
-            return try await data(from: url)
+            if #available(iOS 15.0, *) {
+                return try await data(from: url)
+            } else {
+                return nil
+            }
         } else {
             return nil
         }

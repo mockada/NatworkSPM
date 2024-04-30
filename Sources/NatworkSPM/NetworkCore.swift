@@ -39,6 +39,9 @@ public protocol NetworkCoreProtocol {
         endpoint: EndpointProtocol,
         completion: @escaping (Result<Data, ApiError>) -> Void
     )
+    func fetchDecodedDataWithURLAsync<T: Decodable>(
+        endpoint: EndpointProtocol,
+        resultType: T.Type) async -> Result<T, ApiError>
 }
 
 open class NetworkCore: NetworkCoreProtocol {
