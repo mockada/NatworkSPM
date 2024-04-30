@@ -30,6 +30,11 @@ public protocol CallbackHandlerProtocol {
         error: Error?,
         completion: @escaping (Result<NoContentResponse, ApiError>) -> Void
     )
+    func handleAsyncContent<T: Decodable>(
+        endpoint: EndpointProtocol,
+        resultType: T.Type,
+        data: (Data, URLResponse)?) -> Result<T, ApiError>
+    func handleAsyncError(_ error: Error) -> ApiError
 }
 
 open class CallbackHandler: CallbackHandlerProtocol {
@@ -109,5 +114,30 @@ open class CallbackHandler: CallbackHandlerProtocol {
             return
         }
         completion(.success)
+    }
+    
+    public func handleAsyncContent<T: Decodable>(
+        endpoint: EndpointProtocol,
+        resultType: T.Type,
+        data: (Data, URLResponse)?) -> Result<T, ApiError> {
+        if let foundError = networkHelper.verifyError(response: data?.1) {
+            return .failure(foundError)
+        }
+        guard let unwrappedData = data else {
+            return .failure(.nilData)
+        }
+        guard !unwrappedData.0.isEmpty else {
+            return .failure(.noContent)
+        }
+        let decodedData: T? = networkHelper.decodeData(data: unwrappedData.0, decodingStrategy: endpoint.decodingStrategy)
+            
+        guard let unwrappedDecodedData = decodedData else {
+            return .failure(.jsonParse)
+        }
+        return .success(unwrappedDecodedData)
+    }
+    
+    public func handleAsyncError(_ error: Error) -> ApiError {
+        networkHelper.verifyAsyncError(error)
     }
 }

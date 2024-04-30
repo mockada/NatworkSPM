@@ -202,4 +202,22 @@ open class NetworkCore: NetworkCoreProtocol {
             }
         }
     }
+    
+    public func fetchDecodedDataWithURLAsync<T: Decodable>(
+        endpoint: EndpointProtocol,
+        resultType: T.Type) async -> Result<T, ApiError> {
+            guard let url = requestFactory.makeURL(endpoint: endpoint) else {
+                return .failure(.urlParse)
+            }
+            do {
+                let data = try await sessionCore.session.fetchDataAsync(with: url)
+                let result = callbackHandler.handleAsyncContent(endpoint: endpoint,
+                                                                resultType: resultType,
+                                                                data: data)
+                return result
+            } catch (let error) {
+                let error = callbackHandler.handleAsyncError(error)
+                return .failure(error)
+            }
+    }
 }

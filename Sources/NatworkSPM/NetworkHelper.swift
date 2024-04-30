@@ -10,6 +10,8 @@ import Foundation
 public protocol NetworkHelperProtocol {
     static func decodeData<T: Decodable>(data: Data, decodingStrategy: JSONDecoder.KeyDecodingStrategy) -> T?
     static func verifyError(response: URLResponse?, error: Error?) -> ApiError?
+    static func verifyError(response: URLResponse?) -> ApiError?
+    static func verifyAsyncError(_ error: Error?) -> ApiError
 }
 
 public enum NetworkHelper: NetworkHelperProtocol {
@@ -26,5 +28,20 @@ public enum NetworkHelper: NetworkHelperProtocol {
         }
         let statusCode = StatusCode.getType(code: httpResponse.statusCode)
         return statusCode != .success ? .statusCode(code: statusCode) : nil
+    }
+    
+    public static func verifyError(response: URLResponse?) -> ApiError? {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            return .nilResponse
+        }
+        let statusCode = StatusCode.getType(code: httpResponse.statusCode)
+        return statusCode != .success ? .statusCode(code: statusCode) : nil
+    }
+    
+    public static func verifyAsyncError(_ error: Error?) -> ApiError {
+        if let error = error {
+            return .server(error: error)
+        }
+        return .generic
     }
 }

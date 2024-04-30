@@ -16,4 +16,11 @@ extension URLSession: URLSessionProtocol {
         let task: URLSessionDataTask = dataTask(with: urlRequest, completionHandler: completionHandler)
         task.resume()
     }
+    public func fetchDataAsync(with url: URL) async throws -> (Data, URLResponse)? {
+        if #available(macOS 12.0, *) {
+            return try await data(from: url)
+        } else {
+            return nil
+        }
+    }
 }
